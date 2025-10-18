@@ -1,0 +1,251 @@
+openapi: 3.0.3
+info:
+  title: Speckit Todo API (Provisional)
+  version: 0.1.0
+  description: >
+    REST endpoints currently exposed by speckit-todo-backend. Update once the official
+    feature specification is available.
+servers:
+  - url: http://localhost:4000
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /todos:
+    get:
+      summary: Fetch todos (full or incremental)
+      parameters:
+        - $ref: '#/components/parameters/DeviceTokenHeader'
+        - in: query
+          name: since
+          schema:
+            type: string
+            format: date-time
+          description: Return todos updated after this timestamp
+      responses:
+        '200':
+          description: List of todos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoListResponse'
+    post:
+      summary: Create todo
+      parameters:
+        - $ref: '#/components/parameters/DeviceTokenHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                lastWriteAt:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+        '400':
+          description: Validation error
+  /todos/top:
+    get:
+      summary: Fetch the first active todo
+      parameters:
+        - $ref: '#/components/parameters/DeviceTokenHeader'
+      responses:
+        '200':
+          description: Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+        '404':
+          description: No active todo available
+  /todos/{id}:
+    put:
+      summary: Rename todo (optimistic lock)
+      parameters:
+        - $ref: '#/components/parameters/DeviceTokenHeader'
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, revision]
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 140
+                revision:
+                  type: integer
+                  minimum: 0
+                lastWriteAt:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+        '400':
+          description: Validation error
+        '404':
+          description: Todo not found
+        '409':
+          description: Revision mismatch
+    delete:
+      summary: Soft delete todo
+      parameters:
+        - $ref: '#/components/parameters/DeviceTokenHeader'
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: revision
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+        - in: query
+          name: lastWriteAt
+          required: true
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoResponse'
+        '404':
+          description: Todo not found
+        '409':
+          description: Revision mismatch
+  /todos/reorder:
+    put:
+      summary: Reorder todos
+      parameters:
+        - $ref: '#/components/parameters/DeviceTokenHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderedIds, lastWriteAt]
+              properties:
+                orderedIds:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    format: uuid
+                lastWriteAt:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Reordered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoListResponse'
+        '404':
+          description: Todo not found in ordering
+        '409':
+          description: Ordering mismatch (payload missing active todos)
+components:
+  parameters:
+    DeviceTokenHeader:
+      name: X-Device-Token
+      in: header
+      required: true
+      schema:
+        type: string
+      description: Device token generated on first launch; required for scoping todos.
+  schemas:
+    Todo:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        orderIndex:
+          type: integer
+          minimum: 0
+        deviceToken:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        lastWriteAt:
+          type: string
+          format: date-time
+        revision:
+          type: integer
+          minimum: 0
+        deleted:
+          type: boolean
+      required:
+        - id
+        - title
+        - orderIndex
+        - deviceToken
+        - createdAt
+        - updatedAt
+        - lastWriteAt
+        - revision
+        - deleted
+    TodoResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/Todo'
+    TodoListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Todo'

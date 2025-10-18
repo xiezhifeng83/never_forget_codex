@@ -1,0 +1,13 @@
+.dart_tool/
+.packages
+build/
+ios/
+macos/
+linux/
+web/
+coverage/
+.flutter-plugins
+.flutter-plugins-dependencies
+android/key.properties
+windows/flutter/ephemeral/
+pubspec.lock
