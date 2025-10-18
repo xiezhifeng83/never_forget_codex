@@ -9,10 +9,10 @@ Cross-platform todo experience focused on one-keystroke capture and instant stat
 - Compact TypeScript + Riverpod codebases with shared specs and architecture notes.
 
 ## Layout
-- `speckit-todo-backend/` – Fastify REST API, better-sqlite3 persistence, optimistic locking.
-- `speckit-todo-client/` – Flutter 3.x app with Riverpod, Hive cache, tray/notification services.
-- `docs/` – architecture and performance checklists for the current release.
-- `specs/` – end-to-end specification, plans, contracts, and manual verification scripts.
+- `speckit-todo-backend/` - Fastify REST API, better-sqlite3 persistence, optimistic locking.
+- `speckit-todo-client/` - Flutter 3.x app with Riverpod, Hive cache, tray/notification services.
+- `docs/` - architecture and performance checklists for the current release.
+- `specs/` - end-to-end specification, plans, contracts, and manual verification scripts.
 
 ## Prerequisites
 - Node.js 20+
@@ -61,8 +61,8 @@ The client generates a persistent device token, queues offline mutations, and ke
 - Riverpod state exposes a `hasPendingMutations` flag so the UI can surface sync status while offline.
 
 For deeper dives, start with:
-- `docs/architecture.md` – diagrams, sync loop, and platform surfaces.
-- `speckit-todo-backend/README.md` / `speckit-todo-client/README.md` – platform-specific guides.
-- `specs/master/` – source planning artifacts and API contracts that drive the builds.
+- `docs/architecture.md` - diagrams, sync loop, and platform surfaces.
+- `speckit-todo-backend/README.md` / `speckit-todo-client/README.md` - platform-specific guides.
+- `specs/master/` - source planning artifacts and API contracts that drive the builds.
 
 Happy shipping! Keep the top task fresh so you never forget what's next.
